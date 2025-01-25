@@ -1,15 +1,8 @@
-from enum import Enum
-from colorama import Fore
+from ErrorPrinter import errorPrinter
+from ErrorPrinter import ErrorType
 from pytube import Playlist
 from pytube import YouTube
-from math import ceil
-from multiprocessing import Process
 import os
-
-class ErrorType(Enum):
-    success = 1
-    warning = 2
-    fatal = 3
 
 savePath = "empty"
 url = "empty"
@@ -17,48 +10,9 @@ url = "empty"
 userInput = ""
 commands = ["set", "vars", "run", "stop", "exit", "clear", "help"]
 
-#Prints errors success/warning/fatal
-def errorPrinter(errorType, errorFrom, message):
-    match errorType:
-        case ErrorType.success:
-            print(Fore.GREEN + f"Message from: '{errorFrom}': {message}" + Fore.WHITE)
-        case ErrorType.warning:
-            print(Fore.YELLOW + f"Warining from: '{errorFrom}': {message}" + Fore.WHITE)
-        case ErrorType.fatal:
-            print(Fore.RED + f"Error from: '{errorFrom}': {message}" + Fore.WHITE)
-        case _:
-            print(Fore.RED + f"Error from: 'errorPrinter()': Error type: '{errorType}' doesn't exist!" + Fore.WHITE)
-
 #Downloading Logic
-def downloadVideo(toDownload, browser_index = 0, lastVideoIndex = -1):
-    os.system(f'python3 videoDownloader.py {str(browser_index)} {savePath} "{toDownload}" {lastVideoIndex}')
-
-def downloadPlaylist(URLs):
-    videosCount = len(URLs)
-    toOpenCount = 4 #getStep(videosCount)
-    openedCount = 0
-    linksPerBrowser = ceil(videosCount / toOpenCount)
-    linksAdded = 0
-    browserLinks = []
-    browserTitles = []
-
-    print("Downloading a playlist")
-
-    for i in range(videosCount):
-        browserLinks.append(URLs[i])
-        linksAdded += 1
-
-        if(linksAdded == linksPerBrowser or i >= videosCount - 1):
-            print("Opening browser")
-            print(f"Videos num: {len(browserLinks)}")
-            openedCount += 1
-            linksAsString = ",".join(browserLinks)
-            Process(target=downloadVideo, args=(linksAsString, openedCount, i)).start()
-            browserLinks.clear()
-            browserTitles.clear()
-            linksAdded = 0
-    
-    errorPrinter(ErrorType.success, "downloadPlaylist()", "Downloading was started. You can use console now, to do something else")
+def toDownload(toDownload):
+    os.system(f'python3 videoDownloader.py {savePath} "{toDownload}"')
 
 #Commands
 def commandSet(options):
@@ -93,7 +47,6 @@ def commandVars():
 def commandRun():
     global savePath, url
     toDonwload = None
-    isPlaylist = False
 
     #Checking if the user didn't changed path variable to a working path
     print("Checking PATH on emptines...")
@@ -126,15 +79,9 @@ def commandRun():
             return
     print("OK")
     
-
     #Starts donwload
     print("Starting download...")
-    if isPlaylist: 
-        print("Downloading a playlist...")
-        downloadPlaylist(toDonwload)
-    else:
-        print("Downloading a video...")
-        downloadVideo(toDonwload)
+    toDownload(toDonwload)
     
 def commandHelp(options):
     options = options.replace(" ", "") # removing command name and spaces

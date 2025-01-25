@@ -16,8 +16,7 @@ def renameAndMoveVideo():
 
     #Adding video number if videos in list more than 1
     if videosInList > 1:
-        lastVideoIndex
-        new_file_name = f"{lastVideoIndex - ((videosInList - 1) - currentVideoIndex) + 1}# {new_file_name}"
+        new_file_name = f"{currentVideoIndex + 1}# {new_file_name}"
 
     old_file_path = os.path.join(download_folder, files[0])
     new_file_path = os.path.join(parentFolder, new_file_name)
@@ -146,23 +145,22 @@ def downloadVideo(link):
 
 # Preparations     
 args = sys.argv
-windowID = args[1]
-parentFolder = f'{args[2]}'
-download_folder = os.path.join(args[2], f'browser{windowID}_folder')
-links = args[3].split(",")
+parentFolder = f'{args[1]}'
+download_folder = os.path.join(args[1], f'browser_temp_folder')
+links = args[2].split(",")
 
-print(f"Last video index: {args[4]}")
-
-lastVideoIndex = int(args[4])
 videosInList = len(links)
 currentVideoIndex = 0
 
 print("Variables were prepared")
 
 # Makes a directory for browser
-if len(links) > 1:
-    os.mkdir(download_folder)
-    print("Directory was created")
+if not os.path.exists(download_folder):
+    if len(links) > 1:
+        os.mkdir(download_folder)
+        print("Browser temp directory created")
+else:
+    print("Browser temp directory found")
 
 # Set up new path
 options = Options()
