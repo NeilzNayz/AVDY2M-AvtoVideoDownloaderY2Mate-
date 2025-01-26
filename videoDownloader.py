@@ -1,3 +1,7 @@
+from ErrorPrinter import messagePrint
+from ErrorPrinter import errorPrint
+from ErrorPrinter import ErrorType
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -79,30 +83,30 @@ def downloadingPreparation(link):
     #Waiting until the y2mate page will be loaded
     if waitingPageAnswer() == False:
         return False
-    print("y2mate page is downloaded!")
+    messagePrint("y2mate page is downloaded!")
     sleep(4)
     
     #Sending URL to y2mate and begins convertion
     if beginConvertion(link) == False:
         return False
-    print("Convertion begin!")
+    messagePrint("Convertion begin!")
     sleep(4)
 
     #Waiting until the video will be converted to downlod
     if waitingFileConverting() == False:
         driver.find_element(By.XPATH, '//button[text()="Back"]').click()
         return False
-    print("Convertion completed!")
+    messagePrint("Convertion completed!")
     
     #Pressing 'Download' button to start downloading
-    print("Pressing 'Download' button...")
+    messagePrint("Pressing 'Download' button...")
     driver.find_element(By.XPATH, '//button[text()="Download"]').click()
     sleep(4)
 
     #Waiting until the Ad page will be loaded
     if waitingPageAnswer() == False:
         return False
-    print("Ad page is downloaded!")
+    messagePrint("Ad page is downloaded!")
     sleep(4)
 
     #Closes the Ad tab
@@ -114,20 +118,21 @@ def downloadingPreparation(link):
     return True
 
 # Will be in loop untill it starts downloading a video. If the download failse or something, next link will be selected
-def downloadVideo(link):
+def downloadVideo(link, videoIndex):
     while True:
         # If any step before donwloading will be failed then those operations will be repeated
         if downloadingPreparation(link) == False:
             driver.refresh()
             continue
-        print("Preparations complete")
+        messagePrint("Preparations complete")
 
         sleep(2)
 
         # Waiting until the video will download or the waiting time will hit timeout
-        print("Waiting for the video to donwload...")
+        messagePrint("Waiting for the video to donwload...")
         waitingVideoDownload()
-        print("Video downloaded. Preparing for the next link")
+        errorPrint(ErrorType.success, f"{videoIndex + 1}/{videosInList} video downlaoded!")
+        messagePrint("Preparing for the next link")
 
         sleep(2)
 
@@ -137,7 +142,8 @@ def downloadVideo(link):
             buttonNext.click
         except:
             driver.refresh()
-        print("Preparation for the next link complete!")
+
+        messagePrint("Preparation for the next link complete!")
 
         sleep(2)
 
@@ -152,15 +158,13 @@ links = args[2].split(",")
 videosInList = len(links)
 currentVideoIndex = 0
 
-print("Variables were prepared")
-
 # Makes a directory for browser
 if not os.path.exists(download_folder):
     if len(links) > 1:
         os.mkdir(download_folder)
-        print("Browser temp directory created")
+        messagePrint("Browser temp directory created")
 else:
-    print("Browser temp directory found")
+    messagePrint("Browser temp directory found")
 
 # Set up new path
 options = Options()
@@ -171,22 +175,22 @@ options.add_experimental_option("prefs",{
     "safebrowsing.enabled": True
 })
 driver = webdriver.Chrome(options=options)
-print("Browser was setted up")
+messagePrint("Browser was setted up")
 
 # Open browser
 driver.get("https://y2mate.nu/en-1oJK/")
-print("Browser was launched")
+messagePrint("Browser was launched")
 
 sleep(2)
 
-print(f"Videos to download: {len(links)}")
+messagePrint(f"Videos to download: {len(links)}")
 
-print("Downloading...")
+messagePrint("Downloading...")
 # Logic
 for i in range(videosInList):
     currentVideoIndex = i
-    downloadVideo(links[i])
-    print("Next link")
+    downloadVideo(links[i], i)
+    messagePrint("Next link")
     sleep(2)
 
-print("Done!!!")
+errorPrint(ErrorType.success, "Done!!!")

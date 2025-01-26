@@ -1,4 +1,6 @@
-from ErrorPrinter import errorPrinter
+from ErrorPrinter import errorFromPrint
+from ErrorPrinter import errorPrint
+from ErrorPrinter import messagePrint
 from ErrorPrinter import ErrorType
 from pytube import Playlist
 from pytube import YouTube
@@ -23,47 +25,47 @@ def commandSet(options):
     value = options[deviderIndex + 1:]
 
     if len(value) <= 0:
-        errorPrinter(ErrorType.warning, "set", f"Invalid value. Value cannot be empty. Your value: '{value}'")
+        errorFromPrint(ErrorType.warning, "set", f"Invalid value. Value cannot be empty. Your value: '{value}'")
 
     match variableName:
         case "path":
             if os.path.exists(value):
                 savePath = value
-                errorPrinter(ErrorType.success, "set", f"'path' value was changed on '{savePath}'")
+                errorFromPrint(ErrorType.success, "set", f"'path' value was changed on '{savePath}'")
             else:
-                errorPrinter(ErrorType.warning, "set", f"Path '{value}' doesn't exist. Path must contain only existing path")
+                errorFromPrint(ErrorType.warning, "set", f"Path '{value}' doesn't exist. Path must contain only existing path")
         
         case "url":
             url = value
-            errorPrinter(ErrorType.success, "set", f"'url' value was changed on '{url}'")
+            errorFromPrint(ErrorType.success, "set", f"'url' value was changed on '{url}'")
 
         case _:
-            errorPrinter(ErrorType.warning, "set", f"Invalid value. Value '{variableName}' doesn't exist")
+            errorFromPrint(ErrorType.warning, "set", f"Invalid value. Value '{variableName}' doesn't exist")
 
 def commandVars():
-    print(f"Path: '{savePath}'")
-    print(f"URL: '{url}'")
+    errorPrint(ErrorType.message, f"Path: '{savePath}'")
+    errorPrint(ErrorType.message, f"URL: '{url}'")
 
 def commandRun():
     global savePath, url
     toDonwload = None
 
     #Checking if the user didn't changed path variable to a working path
-    print("Checking PATH on emptines...")
+    messagePrint("Checking PATH on emptines...")
     if savePath == "empty":
-        errorPrinter(ErrorType.fatal, "run", "'Path' variable is empty. Fill the variable with command: set path = yourPath\tPrint 'help path' for more information ")
+        errorFromPrint(ErrorType.fatal, "run", "'Path' variable is empty. Fill the variable with command: set path = yourPath\tPrint 'help path' for more information ")
         return
-    print("OK")
+    errorPrint(ErrorType.success, "OK")
     
     #Checking if URL is empty
-    print("Checking URL on emptines...")
+    messagePrint("Checking URL on emptines...")
     if url == "empty":
-        errorPrinter(ErrorType.fatal, "run", "'URL' variable is empty. Fill the variable with command: set url = yoururl\tPrint 'help url' for more information ")
+        errorFromPrint(ErrorType.fatal, "run", "'URL' variable is empty. Fill the variable with command: set url = yoururl\tPrint 'help url' for more information ")
         return
-    print("OK")
+    errorPrint(ErrorType.success, "OK")
 
     #Checking if URL is a playlist 
-    print("Checking URL on working...")
+    messagePrint("Checking URL on working...")
     try:
         playlist = Playlist(url)
         url = f"{url}\t Videos: {len(playlist.video_urls)}"
@@ -75,27 +77,27 @@ def commandRun():
             toDonwload = YouTube(url).watch_url
         except:
             # If both conditions were failed we throw an error
-            errorPrinter(ErrorType.fatal, "run", "the URL link isn't working. Please check the URL.\n")
+            errorFromPrint(ErrorType.fatal, "run", "the URL link isn't working. Please check the URL.\n")
             return
-    print("OK")
+    errorPrint(ErrorType.success, "OK")
     
     #Starts donwload
-    print("Starting download...")
+    messagePrint("Starting download...")
     toDownload(toDonwload)
     
 def commandHelp(options):
     options = options.replace(" ", "") # removing command name and spaces
     
     if len(options) <= 0:
-        print("==========================ABOUT===============================================================================================")
-        print("App for donwloading YouTube videos via y2mate.nu website")
-        print("Author: TDT(TimDevTech) (NeizNayz)")
+        messagePrint("==========================ABOUT===============================================================================================")
+        messagePrint("App for donwloading YouTube videos via y2mate.nu website")
+        messagePrint("Author: TDT(TimDevTech) (NeizNayz)")
         print()
-        print("=========================COMANDS==============================================================================================")
+        messagePrint("=========================COMANDS==============================================================================================")
         for command in commands:
             printCommandDescription(command)
-            print()
-        print("==============================================================================================================================")
+            messagePrint()
+        messagePrint("==============================================================================================================================")
         return
 
     printCommandDescription(options) 
@@ -103,25 +105,25 @@ def commandHelp(options):
 def printCommandDescription(toExplain):
     match toExplain:
         case "path": 
-            print("'Path' variable stores a path where videos will be stored.\nBefore starting downloading you need to fill it with: set path = yourPath\tWhere yourPath is path to the existing directory where the video will be soterd")
+            messagePrint("'Path' variable stores a path where videos will be stored.\nBefore starting downloading you need to fill it with: set path = yourPath\tWhere yourPath is path to the existing directory where the video will be soterd")
         case "url":
-            print("URL will be inserted into y2mate.nu input field. Make sure that the URL is working (because script doesn't check is the URL working or not, but if URL doesn't work, it can cause some troubles later).\nBefore starting downloading you need to fill it with: set url = yourURL\tWhere yourURL is the url of a video or a playlis on YouTube")
+            messagePrint("URL will be inserted into y2mate.nu input field. Make sure that the URL is working (because script doesn't check is the URL working or not, but if URL doesn't work, it can cause some troubles later).\nBefore starting downloading you need to fill it with: set url = yourURL\tWhere yourURL is the url of a video or a playlis on YouTube")
         case "set":
-            print("set variableName = value \t - Will put value in a variable.\n\t\t\t\t\tExample: set url = https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUHcmlja3JvbA%3D%3D")
+            messagePrint("set variableName = value \t - Will put value in a variable.\n\t\t\t\t\tExample: set url = https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUHcmlja3JvbA%3D%3D")
         case "vars": 
-            print("vars\t\t\t\t - Shows 'user variables' that need to be filled and contents of those variables")
+            messagePrint("vars\t\t\t\t - Shows 'user variables' that need to be filled and contents of those variables")
         case "run": 
-            print("run\t\t\t\t - Starts downloading and will use info from 'user variables'")
+            messagePrint("run\t\t\t\t - Starts downloading and will use info from 'user variables'")
         case "stop":
-            print("stop\t\t\t\t - Stops downloading immediatly. Works only when you downloading a playlist")
+            messagePrint("stop\t\t\t\t - Stops downloading immediatly. Works only when you downloading a playlist")
         case "exit":
-            print("exit\t\t\t\t - Closes this script")
+            messagePrint("exit\t\t\t\t - Closes this script")
         case "clear":
-            print("clear\t\t\t\t - Clears the console")
+            messagePrint("clear\t\t\t\t - Clears the console")
         case "help": 
-            print("help optionName\t\t\t - Shows information how to work with a command or a variable.\n\t\t\t\t\tExample: help set\tWill show how to use 'set' command\n\t\t\t\t\tExample: help path\tWill explain how to use path variable\n\t\t\t\t\tExmaple: help\t will show all about the script and commands list")
+            messagePrint("help optionName\t\t\t - Shows information how to work with a command or a variable.\n\t\t\t\t\tExample: help set\tWill show how to use 'set' command\n\t\t\t\t\tExample: help path\tWill explain how to use path variable\n\t\t\t\t\tExmaple: help\t will show all about the script and commands list")
         case _:
-            errorPrinter(ErrorType.warning, "help/printCommandDescription()", f"Command {toExplain} doesn't exist. Print 'help' for more information")
+            errorFromPrint(ErrorType.warning, "help/printCommandDescription()", f"Command {toExplain} doesn't exist. Print 'help' for more information")
 
 #User input handling
 
@@ -145,7 +147,7 @@ def getCommand():
 def checkUserInput():
     command = getCommand()
     options = userInput[len(command):]
-    print("Processing command...")
+    messagePrint("Processing command...")
     match command:
         case "set": commandSet(options)
         case "vars": commandVars()
@@ -153,9 +155,9 @@ def checkUserInput():
         case "exit": exit()
         case "clear": os.system('cls' if os.name=='nt' else 'clear')
         case "help": commandHelp(options)
-        case "stop": errorPrinter(ErrorType.warning, "checkUserInput()", "Playlist insn't downloading now. Enter 'help stop' for more information")
+        case "stop": errorFromPrint(ErrorType.warning, "checkUserInput()", "Playlist insn't downloading now. Enter 'help stop' for more information")
         case _:
-            errorPrinter(ErrorType.warning, "checkUserInput()", f"Invalid input. Command '{command}' doesn't exist")
+            errorFromPrint(ErrorType.warning, "checkUserInput()", f"Invalid input. Command '{command}' doesn't exist")
     print()
 
 #Program
