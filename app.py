@@ -10,12 +10,84 @@ savePath = "empty"
 url = "empty"
 
 userInput = ""
-commands = ["set", "vars", "run", "stop", "exit", "clear", "help"]
+commands = ["set", "vars", "run", "stop", "exit", "clear", "help", "path", "url"]
+
+def checkNumber(number):
+        if len(number) > 0:
+            try:
+                number = int(number)
+                if number < 0:
+                    return -1
+            except:
+                return -1
+        else:
+            number = 0
+
+        return number 
 
 #Downloading Logic
-def toDownload(toDownload):
-    os.system(f'python3 videoDownloader.py {savePath} "{toDownload}"')
+def toDownloadFunc(toDownload, downloadFrom = 0, downloadTo = 0):
+    os.system(f'python3 videoDownloader.py {savePath} "{toDownload}" {downloadFrom} {downloadTo}')
 
+def downloadPlaylist(toDownload):
+    print("Playlist prep")
+    errorPrint(ErrorType.warning, "Do you want to set from where to where to download? ")
+    errorPrint(ErrorType.fatal,"If you don't:\t\tJust press enter")
+    errorPrint(ErrorType.success,"If you do:\t\tEnter: fromNumber:toNumber")
+    messagePrint("Example: 10:15\t\tWill download from -the video 10- to -the video 15 included-")
+    messagePrint("Example: 10:\t\tWill download from -the video 10- to -the end of the playlist-")
+    messagePrint("Example: :15\t\tWill download from -the start of the playlist- -to the video 15 included-")
+
+    while True:
+        print("input: ", end="")
+        userInput = input()
+
+        devider = userInput.find(":")
+
+        if devider == -1:
+            errorPrint(ErrorType.warning, "Devider ':' wasn't find.")
+            continue
+
+        fromNumber = checkNumber(userInput[:devider])
+        if fromNumber == -1:
+            errorPrint(ErrorType.warning, "Invalind 'fromNumber'. 'fromNumber' should be only a number or nothing. Example: '34' or ''.")
+            continue
+
+        toNumber = checkNumber(userInput[devider+1:])
+        if toNumber == -1:
+            errorPrint(ErrorType.warning, "Invalind 'toNumber'. 'toNumber' should be only a number or nothing. Example: '34' or ''.")
+            continue
+        
+        messagePrint(f"fromNumber: '{fromNumber}', toNumber: '{toNumber}'")
+
+        if fromNumber > toNumber:
+            errorPrint(ErrorType.warning, "fromNumber cannot be more than toNumber")
+            continue
+
+        videosCount = len(toDownload)
+        if fromNumber > videosCount or toNumber > videosCount:
+            errorPrint(ErrorType.warning, f"fromNumber and toNumber cannot be more than num of videos. Videos in playlist: {videosCount}")
+            continue
+
+        if fromNumber == 0 and toNumber == 0:
+            messagePrint("Are you serious? Both are zero! You could just press 'Enter' >_<")
+            messagePrint("Enter 'y' if you are seious.")
+            userAnwer = input("").lower()
+            if userAnwer == "y":
+                print()
+                messagePrint("Please don't do this again! I don't like it. Q_Q")
+                messagePrint("Just press enter next time. if you want to download full playlist")
+                messagePrint("Press 'Enter' to continue")
+                input()
+            else:
+                return
+        
+        if fromNumber > 0:
+            fromNumber-=1
+
+        toDownloadFunc(toDownload, fromNumber, toNumber + 1)
+        return
+    
 #Commands
 def commandSet(options):
     global savePath, url
@@ -48,6 +120,7 @@ def commandVars():
 
 def commandRun():
     global savePath, url
+    isPlaylist = False
     toDonwload = None
 
     #Checking if the user didn't changed path variable to a working path
@@ -83,21 +156,36 @@ def commandRun():
     
     #Starts donwload
     messagePrint("Starting download...")
-    toDownload(toDonwload)
+
+    print(f"Is a playlisth: {isPlaylist}")
+
+    if isPlaylist:
+        downloadPlaylist(toDonwload)
+    else:
+        toDownloadFunc(toDonwload)
+    
+    errorPrint(ErrorType.success, "Downloading complete")
     
 def commandHelp(options):
     options = options.replace(" ", "") # removing command name and spaces
     
     if len(options) <= 0:
-        messagePrint("==========================ABOUT===============================================================================================")
+        messagePrint("==ABOUT========================================================================================================================")
         messagePrint("App for donwloading YouTube videos via y2mate.nu website")
         messagePrint("Author: TDT(TimDevTech) (NeizNayz)")
         print()
-        messagePrint("=========================COMANDS==============================================================================================")
+        messagePrint("==COMANDS======================================================================================================================")
         for command in commands:
             printCommandDescription(command)
             messagePrint()
-        messagePrint("==============================================================================================================================")
+
+        messagePrint("==VARIABLES====================================================================================================================")
+        messagePrint("Variables can be changed via 'variableName = value'\nExample: url = https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUHcmlja3JvbA%3D%3D \nIt will set https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUHcmlja3JvbA%3D%3D value in url variable")
+        messagePrint("Variables available: path, url")
+        messagePrint("To see what which variable for, enter: help variableName")
+        messagePrint("To see what variables contain, enter: vars")
+        commandVars()
+        print()
         return
 
     printCommandDescription(options) 
@@ -105,13 +193,11 @@ def commandHelp(options):
 def printCommandDescription(toExplain):
     match toExplain:
         case "path": 
-            messagePrint("'Path' variable stores a path where videos will be stored.\nBefore starting downloading you need to fill it with: set path = yourPath\tWhere yourPath is path to the existing directory where the video will be soterd")
+            messagePrint("Variable 'Path' variable stores a path where videos will be stored.\nBefore starting downloading you need to fill it with: set path = yourPath\tWhere yourPath is path to the existing directory where the video will be soterd")
         case "url":
-            messagePrint("URL will be inserted into y2mate.nu input field. Make sure that the URL is working (because script doesn't check is the URL working or not, but if URL doesn't work, it can cause some troubles later).\nBefore starting downloading you need to fill it with: set url = yourURL\tWhere yourURL is the url of a video or a playlis on YouTube")
-        case "set":
-            messagePrint("set variableName = value \t - Will put value in a variable.\n\t\t\t\t\tExample: set url = https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUHcmlja3JvbA%3D%3D")
+            messagePrint("Variable 'URL' will be inserted into y2mate.nu input field. Make sure that the URL is working (because script doesn't check is the URL working or not, but if URL doesn't work, it can cause some troubles later).\nBefore starting downloading you need to fill it with: set url = yourURL\tWhere yourURL is the url of a video or a playlis on YouTube")
         case "vars": 
-            messagePrint("vars\t\t\t\t - Shows 'user variables' that need to be filled and contents of those variables")
+            messagePrint("vars\t\t\t\t - Shows 'user variables' that need to be filled")
         case "run": 
             messagePrint("run\t\t\t\t - Starts downloading and will use info from 'user variables'")
         case "stop":
@@ -126,30 +212,26 @@ def printCommandDescription(toExplain):
             errorFromPrint(ErrorType.warning, "help/printCommandDescription()", f"Command {toExplain} doesn't exist. Print 'help' for more information")
 
 #User input handling
-
 def getCommand():
-    symbolCount = 1
-    command = ''
-    for symbol in userInput:
-
-        if symbolCount >= 5:
-            break
-
-        if symbol != " ":
-            command = command + symbol.lower()
-            symbolCount = symbolCount + 1
-        
-        if symbolCount >= 3:
-            for commandName in commands:
-                if command == commandName:
-                    return command
+    global userInput
+    command = userInput.strip().split(" ")[0].lower()
+    if command in commands:
+        return command
+    else:
+        return None
 
 def checkUserInput():
+    if len(userInput) <= 0:
+        return
+
     command = getCommand()
-    options = userInput[len(command):]
-    messagePrint("Processing command...")
+    if command is None:
+        errorFromPrint(ErrorType.warning, "checkUserInput()", f"Invalid command 'userInput'. Enter 'help' to see available commands.")
+        return
+
+    options = userInput[len(command):].strip()
+
     match command:
-        case "set": commandSet(options)
         case "vars": commandVars()
         case "run": commandRun()
         case "exit": exit()
@@ -157,22 +239,22 @@ def checkUserInput():
         case "help": commandHelp(options)
         case "stop": errorFromPrint(ErrorType.warning, "checkUserInput()", "Playlist insn't downloading now. Enter 'help stop' for more information")
         case _:
-            errorFromPrint(ErrorType.warning, "checkUserInput()", f"Invalid input. Command '{command}' doesn't exist")
+            commandSet(userInput)
     print()
 
 #Program
-#print("Hello! Enter help to know how to use the script.")
-#while True:
-#    print("Enter command: ", end='')
-#    userInput = input()
-#    checkUserInput()
+messagePrint("Hello! Enter help to know how to use the script.")
 
-# Auto insert for testing
-userInput = "set url = https://www.youtube.com/watch?v=kRcbYLK3OnQ&list=PLQOaTSbfxUtCrKs0nicOg2npJQYSPGO9r"
+userInput = "url = https://www.youtube.com/watch?v=62Vjm0UGfv8&list=PLepq44cq4JdyaMy-U1xQQLwWgD63MzTR3"
 checkUserInput()
-userInput = "set path = /media/njj/Media/DownloadVideos"
+userInput = "path = /media/njj/Media/DownloadVideos"
 checkUserInput()
 userInput = "run"
 checkUserInput()
 
-input()
+while True:
+    print("Enter command: ", end='')
+    userInput = input()
+    checkUserInput()
+
+# Auto insert for testing

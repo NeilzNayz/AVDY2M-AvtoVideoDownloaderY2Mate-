@@ -126,7 +126,7 @@ def downloadVideo(link, videoIndex):
             continue
         messagePrint("Preparations complete")
 
-        sleep(2)
+        sleep(1)
 
         # Waiting until the video will download or the waiting time will hit timeout
         messagePrint("Waiting for the video to donwload...")
@@ -134,7 +134,7 @@ def downloadVideo(link, videoIndex):
         errorPrint(ErrorType.success, f"{videoIndex + 1}/{videosInList} video downlaoded!")
         messagePrint("Preparing for the next link")
 
-        sleep(2)
+        sleep(1)
 
         # Tries to find 'Next' button and presses it. Otherwise it will refresh the page
         try:
@@ -145,7 +145,7 @@ def downloadVideo(link, videoIndex):
 
         messagePrint("Preparation for the next link complete!")
 
-        sleep(2)
+        sleep(1)
 
         return
 
@@ -154,6 +154,9 @@ args = sys.argv
 parentFolder = f'{args[1]}'
 download_folder = os.path.join(args[1], f'browser_temp_folder')
 links = args[2].split(",")
+
+fromNumber = int(args[3])
+toNumber = int(args[4])
 
 videosInList = len(links)
 currentVideoIndex = 0
@@ -183,11 +186,15 @@ messagePrint("Browser was launched")
 
 sleep(2)
 
+links = links[fromNumber:toNumber]
+
 messagePrint(f"Videos to download: {len(links)}")
 
-messagePrint("Downloading...")
 # Logic
-for i in range(videosInList):
+messagePrint("Downloading...")
+links = links[fromNumber:toNumber]
+
+for i in range(len(links)):
     currentVideoIndex = i
     downloadVideo(links[i], i)
     messagePrint("Next link")
