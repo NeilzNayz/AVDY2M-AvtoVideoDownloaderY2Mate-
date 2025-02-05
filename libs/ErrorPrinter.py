@@ -1,5 +1,5 @@
-from enum import Enum
 from colorama import Fore
+from enum import Enum
 
 class ErrorType(Enum):
     message = 0
@@ -7,11 +7,8 @@ class ErrorType(Enum):
     warning = 2
     fatal = 3
 
-#Prints errors success/warning/fatal
-
 def messagePrint(message):
     print(Fore.CYAN + message + Fore.WHITE)
-
 def errorPrint(errorType, message):
     match errorType:
         case ErrorType.message:
@@ -24,7 +21,6 @@ def errorPrint(errorType, message):
             print(Fore.RED + message + Fore.WHITE)
         case _:
             print(Fore.RED + message + Fore.WHITE)
-
 def errorFromPrint(errorType, errorFrom, message):
     match errorType:
         case ErrorType.message:

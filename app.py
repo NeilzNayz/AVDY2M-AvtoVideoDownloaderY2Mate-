@@ -1,10 +1,8 @@
-from ErrorPrinter import errorFromPrint
-from ErrorPrinter import errorPrint
-from ErrorPrinter import messagePrint
-from ErrorPrinter import ErrorType
-from pytube import Playlist
-from pytube import YouTube
-import threading
+from libs.ErrorPrinter import errorFromPrint
+from libs.ErrorPrinter import messagePrint
+from libs.ErrorPrinter import errorPrint
+from libs.ErrorPrinter import ErrorType
+from donwloader import startDownloading
 import os
 
 savePath = "empty"
@@ -12,93 +10,7 @@ url = "empty"
 
 userInput = ""
 commands = ["set", "vars", "run", "stop", "exit", "clear", "help", "path", "url"]
-
-def checkNumber(number):
-        if len(number) > 0:
-            try:
-                number = int(number)
-                if number < 0:
-                    return -1
-            except:
-                return -1
-        else:
-            number = 0
-
-        return number 
-
-#Downloading Logic
-def toDownloadFunc(toDownload, downloadFrom = 0, downloadTo = 0):
-    def run_script():
-        os.system(f'python videoDownloader.py {savePath} "{toDownload}" {downloadFrom} {downloadTo}')
-
-    thread = threading.Thread(target=run_script)
-    thread.start()
-    thread.join()
-
-def downloadPlaylist(toDownload):
-    print("Playlist prep")
-    errorPrint(ErrorType.warning, "Do you want to set from where to where to download? ")
-    errorPrint(ErrorType.fatal,"If you don't:\t\tJust press enter")
-    errorPrint(ErrorType.success,"If you do:\t\tEnter: fromNumber:toNumber")
-    messagePrint("Example: 10:15\t\tWill download from -the video 10- to -the video 15 included-")
-    messagePrint("Example: 10:\t\tWill download from -the video 10- to -the end of the playlist-")
-    messagePrint("Example: :15\t\tWill download from -the start of the playlist- -to the video 15 included-")
-
-    while True:
-        print("input: ", end="")
-        userInput = input()
-
-        devider = userInput.find(":")
-
-        if len(userInput) != 0:
-            if devider == -1:
-                errorPrint(ErrorType.warning, "Devider ':' wasn't find.")
-                continue
-
-            downloadFrom = checkNumber(userInput[:devider])
-            if downloadFrom == -1:
-                errorPrint(ErrorType.warning, "Invalind 'fromNumber'. 'fromNumber' should be only a number or nothing. Example: '34' or ''.")
-                continue
-
-            donwloadTo = checkNumber(userInput[devider+1:])
-            if donwloadTo == -1:
-                errorPrint(ErrorType.warning, "Invalind 'toNumber'. 'toNumber' should be only a number or nothing. Example: '34' or ''.")
-                continue
-            
-            messagePrint(f"fromNumber: '{downloadFrom}', toNumber: '{donwloadTo}'")
-
-            if downloadFrom > donwloadTo:
-                errorPrint(ErrorType.warning, "fromNumber cannot be more than toNumber")
-                continue
-
-            videosCount = len(toDownload)
-            if downloadFrom > videosCount or donwloadTo > videosCount:
-                errorPrint(ErrorType.warning, f"fromNumber and toNumber cannot be more than num of videos. Videos in playlist: {videosCount}")
-                continue
-
-            if downloadFrom == 0 and donwloadTo == 0:
-                messagePrint("Are you serious? Both are zero! You could just press 'Enter' >_<")
-                messagePrint("Enter 'y' if you are seious.")
-                userAnwer = input("").lower()
-                if userAnwer == "y":
-                    print()
-                    messagePrint("Please don't do this again! I don't like it. Q_Q")
-                    messagePrint("Just press enter next time. if you want to download full playlist")
-                    messagePrint("Press 'Enter' to continue")
-                    input()
-                else:
-                    return
-                
-            if downloadFrom > 0:
-                downloadFrom-=1
-
-        else:
-            downloadFrom = 0
-            donwloadTo = len(toDownload)
-
-        toDownloadFunc(toDownload, downloadFrom, donwloadTo + 1)
-        return
-    
+ 
 #Commands
 def commandSet(options):
     global savePath, url
@@ -124,59 +36,11 @@ def commandSet(options):
 
         case _:
             errorFromPrint(ErrorType.warning, "set", f"Invalid value. Value '{variableName}' doesn't exist")
-
 def commandVars():
     errorPrint(ErrorType.message, f"Path: '{savePath}'")
     errorPrint(ErrorType.message, f"URL: '{url}'")
-
 def commandRun():
-    global savePath, url
-    isPlaylist = False
-    toDonwload = None
-
-    #Checking if the user didn't changed path variable to a working path
-    messagePrint("Checking PATH on emptines...")
-    if savePath == "empty":
-        errorFromPrint(ErrorType.fatal, "run", "'Path' variable is empty. Fill the variable with command: set path = yourPath\tPrint 'help path' for more information ")
-        return
-    errorPrint(ErrorType.success, "OK")
-    
-    #Checking if URL is empty
-    messagePrint("Checking URL on emptines...")
-    if url == "empty":
-        errorFromPrint(ErrorType.fatal, "run", "'URL' variable is empty. Fill the variable with command: set url = yoururl\tPrint 'help url' for more information ")
-        return
-    errorPrint(ErrorType.success, "OK")
-
-    #Checking if URL is a playlist 
-    messagePrint("Checking URL on working...")
-    try:
-        playlist = Playlist(url)
-        url = f"{url}\t Videos: {len(playlist.video_urls)}"
-        toDonwload = playlist.video_urls
-        isPlaylist = True
-    except:
-        #Checking if URL is a video
-        try:
-            toDonwload = YouTube(url).watch_url
-        except:
-            # If both conditions were failed we throw an error
-            errorFromPrint(ErrorType.fatal, "run", "the URL link isn't working. Please check the URL.\n")
-            return
-    errorPrint(ErrorType.success, "OK")
-    
-    #Starts donwload
-    messagePrint("Starting download...")
-
-    print(f"Is a playlisth: {isPlaylist}")
-
-    if isPlaylist:
-        downloadPlaylist(toDonwload)
-    else:
-        toDownloadFunc(toDonwload)
-    
-    errorPrint(ErrorType.success, "Downloading complete")
-    
+    startDownloading(savePath, url)
 def commandHelp(options):
     options = options.replace(" ", "") # removing command name and spaces
     
@@ -200,7 +64,6 @@ def commandHelp(options):
         return
 
     printCommandDescription(options) 
-
 def printCommandDescription(toExplain):
     match toExplain:
         case "path": 
@@ -230,7 +93,6 @@ def findCommand():
         return command
     else:
         return None
-
 def checkUserInput():
     if len(userInput) <= 0:
         return
@@ -256,6 +118,7 @@ def checkUserInput():
 #Program
 messagePrint("Hello! Enter help to know how to use the script.")
 
+# Auto insert for testing
 userInput = "url = https://www.youtube.com/watch?v=18c3MTX0PK0&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb"
 checkUserInput()
 userInput = "path = I:\Tutorials\C++"
@@ -267,5 +130,3 @@ while True:
     print("Enter command: ", end='')
     userInput = input()
     checkUserInput()
-
-# Auto insert for testing
