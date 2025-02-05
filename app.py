@@ -4,6 +4,7 @@ from ErrorPrinter import messagePrint
 from ErrorPrinter import ErrorType
 from pytube import Playlist
 from pytube import YouTube
+import threading
 import os
 
 savePath = "empty"
@@ -27,7 +28,12 @@ def checkNumber(number):
 
 #Downloading Logic
 def toDownloadFunc(toDownload, downloadFrom = 0, downloadTo = 0):
-    os.system(f'python3 videoDownloader.py {savePath} "{toDownload}" {downloadFrom} {downloadTo}')
+    def run_script():
+        os.system(f'python videoDownloader.py {savePath} "{toDownload}" {downloadFrom} {downloadTo}')
+
+    thread = threading.Thread(target=run_script)
+    thread.start()
+    thread.join()
 
 def downloadPlaylist(toDownload):
     print("Playlist prep")
@@ -44,48 +50,53 @@ def downloadPlaylist(toDownload):
 
         devider = userInput.find(":")
 
-        if devider == -1:
-            errorPrint(ErrorType.warning, "Devider ':' wasn't find.")
-            continue
+        if len(userInput) != 0:
+            if devider == -1:
+                errorPrint(ErrorType.warning, "Devider ':' wasn't find.")
+                continue
 
-        fromNumber = checkNumber(userInput[:devider])
-        if fromNumber == -1:
-            errorPrint(ErrorType.warning, "Invalind 'fromNumber'. 'fromNumber' should be only a number or nothing. Example: '34' or ''.")
-            continue
+            downloadFrom = checkNumber(userInput[:devider])
+            if downloadFrom == -1:
+                errorPrint(ErrorType.warning, "Invalind 'fromNumber'. 'fromNumber' should be only a number or nothing. Example: '34' or ''.")
+                continue
 
-        toNumber = checkNumber(userInput[devider+1:])
-        if toNumber == -1:
-            errorPrint(ErrorType.warning, "Invalind 'toNumber'. 'toNumber' should be only a number or nothing. Example: '34' or ''.")
-            continue
-        
-        messagePrint(f"fromNumber: '{fromNumber}', toNumber: '{toNumber}'")
+            donwloadTo = checkNumber(userInput[devider+1:])
+            if donwloadTo == -1:
+                errorPrint(ErrorType.warning, "Invalind 'toNumber'. 'toNumber' should be only a number or nothing. Example: '34' or ''.")
+                continue
+            
+            messagePrint(f"fromNumber: '{downloadFrom}', toNumber: '{donwloadTo}'")
 
-        if fromNumber > toNumber:
-            errorPrint(ErrorType.warning, "fromNumber cannot be more than toNumber")
-            continue
+            if downloadFrom > donwloadTo:
+                errorPrint(ErrorType.warning, "fromNumber cannot be more than toNumber")
+                continue
 
-        videosCount = len(toDownload)
-        if fromNumber > videosCount or toNumber > videosCount:
-            errorPrint(ErrorType.warning, f"fromNumber and toNumber cannot be more than num of videos. Videos in playlist: {videosCount}")
-            continue
+            videosCount = len(toDownload)
+            if downloadFrom > videosCount or donwloadTo > videosCount:
+                errorPrint(ErrorType.warning, f"fromNumber and toNumber cannot be more than num of videos. Videos in playlist: {videosCount}")
+                continue
 
-        if fromNumber == 0 and toNumber == 0:
-            messagePrint("Are you serious? Both are zero! You could just press 'Enter' >_<")
-            messagePrint("Enter 'y' if you are seious.")
-            userAnwer = input("").lower()
-            if userAnwer == "y":
-                print()
-                messagePrint("Please don't do this again! I don't like it. Q_Q")
-                messagePrint("Just press enter next time. if you want to download full playlist")
-                messagePrint("Press 'Enter' to continue")
-                input()
-            else:
-                return
-        
-        if fromNumber > 0:
-            fromNumber-=1
+            if downloadFrom == 0 and donwloadTo == 0:
+                messagePrint("Are you serious? Both are zero! You could just press 'Enter' >_<")
+                messagePrint("Enter 'y' if you are seious.")
+                userAnwer = input("").lower()
+                if userAnwer == "y":
+                    print()
+                    messagePrint("Please don't do this again! I don't like it. Q_Q")
+                    messagePrint("Just press enter next time. if you want to download full playlist")
+                    messagePrint("Press 'Enter' to continue")
+                    input()
+                else:
+                    return
+                
+            if downloadFrom > 0:
+                downloadFrom-=1
 
-        toDownloadFunc(toDownload, fromNumber, toNumber + 1)
+        else:
+            downloadFrom = 0
+            donwloadTo = len(toDownload)
+
+        toDownloadFunc(toDownload, downloadFrom, donwloadTo + 1)
         return
     
 #Commands
@@ -212,7 +223,7 @@ def printCommandDescription(toExplain):
             errorFromPrint(ErrorType.warning, "help/printCommandDescription()", f"Command {toExplain} doesn't exist. Print 'help' for more information")
 
 #User input handling
-def getCommand():
+def findCommand():
     global userInput
     command = userInput.strip().split(" ")[0].lower()
     if command in commands:
@@ -224,7 +235,7 @@ def checkUserInput():
     if len(userInput) <= 0:
         return
 
-    command = getCommand()
+    command = findCommand()
     if command is None:
         errorFromPrint(ErrorType.warning, "checkUserInput()", f"Invalid command 'userInput'. Enter 'help' to see available commands.")
         return
@@ -245,9 +256,9 @@ def checkUserInput():
 #Program
 messagePrint("Hello! Enter help to know how to use the script.")
 
-userInput = "url = https://www.youtube.com/watch?v=62Vjm0UGfv8&list=PLepq44cq4JdyaMy-U1xQQLwWgD63MzTR3"
+userInput = "url = https://www.youtube.com/watch?v=18c3MTX0PK0&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb"
 checkUserInput()
-userInput = "path = /media/njj/Media/DownloadVideos"
+userInput = "path = I:\Tutorials\C++"
 checkUserInput()
 userInput = "run"
 checkUserInput()

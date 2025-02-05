@@ -150,6 +150,8 @@ def downloadVideo(link, videoIndex):
         return
 
 # Preparations     
+
+print("Ne v to morio")
 args = sys.argv
 parentFolder = f'{args[1]}'
 download_folder = os.path.join(args[1], f'browser_temp_folder')
