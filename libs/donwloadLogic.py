@@ -41,6 +41,7 @@ def downloadingPreparation(_driver, _link):
         return False
     messagePrint("y2mate page is downloaded!")
     
+    sleep(1)
     #Sending URL to y2mate and begins convertion
     if beginConvertion(_driver, _link) == False:
         return False
@@ -50,7 +51,9 @@ def downloadingPreparation(_driver, _link):
     if waitingVideoConverting(_driver) == False:
         return False
     messagePrint("Convertion completed!")
-    
+
+    sleep(2)
+
     #Pressing 'Download' button to start downloading
     messagePrint("Pressing 'Download' button...")
     _driver.find_element(By.XPATH, '//button[text()="Download"]').click()
@@ -59,6 +62,8 @@ def downloadingPreparation(_driver, _link):
     if waitingPageReady(_driver) == False:
         return False
     messagePrint("Ad page is downloaded!")
+    
+    sleep(4)
 
     #Closes the Ad tab
     tabs = _driver.window_handles

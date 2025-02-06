@@ -23,14 +23,17 @@ def checkNumber(number):
             try:
                 number = int(number)
                 if number < 0:
-                    return -1
+                    return -1 #number is less than zero
             except:
-                return -1
+                return -1 #number is invalid
         else:
-            number = 0
+            number = -2 #number is empty
 
         return number 
+
 def getFromToIndexes(links):
+    global videosInList
+
     print("Playlist prep")
     errorPrint(ErrorType.warning, "Do you want to set from where to where to download? ")
     errorPrint(ErrorType.fatal,"If you don't:\t\tJust press enter")
@@ -41,11 +44,10 @@ def getFromToIndexes(links):
 
     while True:
         print("input: ", end="")
-        userInput = input()
-
-        devider = userInput.find(":")
+        userInput = input().replace(" ", "")
 
         if len(userInput) != 0:
+            devider = userInput.find(":")
             if devider == -1:
                 errorPrint(ErrorType.warning, "Devider ':' wasn't find.")
                 continue
@@ -55,34 +57,41 @@ def getFromToIndexes(links):
                 errorPrint(ErrorType.warning, "Invalind 'fromNumber'. 'fromNumber' should be only a number or nothing. Example: '34' or ''.")
                 continue
 
-            donwloadTo = checkNumber(userInput[devider+1:])
-            if donwloadTo == -1:
+            downloadTo = checkNumber(userInput[devider+1:])
+            if downloadTo == -1:
+                print(userInput[devider+1:]);
                 errorPrint(ErrorType.warning, "Invalind 'toNumber'. 'toNumber' should be only a number or nothing. Example: '34' or ''.")
                 continue
-            
-            messagePrint(f"fromNumber: '{downloadFrom}', toNumber: '{donwloadTo}'")
 
-            if downloadFrom > donwloadTo:
+            if downloadFrom == -2:  #If user entered: ':10' then it means download from 0 to 10
+                downloadFrom = 0
+
+            if downloadTo == -2:    #If user entered: '10:' then it means download from 10 to the end of a playlist
+                downloadTo = videosInList
+            
+            messagePrint(f"fromNumber: '{downloadFrom}', toNumber: '{downloadTo}'")
+
+            if downloadFrom > downloadTo:
                 errorPrint(ErrorType.warning, "fromNumber cannot be more than toNumber")
                 continue
 
-            videosCount = len(links)
+            videosInList = len(links)
 
-            if downloadFrom > videosCount or donwloadTo > videosCount:
-                errorPrint(ErrorType.warning, f"fromNumber and toNumber cannot be more than num of videos. Videos in playlist: {videosCount}")
+            if downloadFrom > videosInList or downloadTo > videosInList:
+                errorPrint(ErrorType.warning, f"fromNumber and toNumber cannot be more than num of videos. Videos in playlist: {videosInList}")
                 continue
 
-            if downloadFrom == 0 and donwloadTo == 0:
-                return [0, videosCount]
+            if downloadFrom == 0 and downloadTo == 0:
+                return [0, videosInList]
                 
             if downloadFrom > 0:
                 downloadFrom-=1
 
         else:
             downloadFrom = 0
-            donwloadTo = len(links)
+            downloadTo = len(links)
 
-        return [downloadFrom, donwloadTo]
+        return [downloadFrom, downloadTo]
 def isPathAndURLEmpty(savePath, url):
     #Checking if the user didn't changed path variable to a working path
     messagePrint("Checking PATH on emptines...")
@@ -154,7 +163,7 @@ def startDownloading(_savePath, _url):
 
     for i in range(downloadFrom, downloadTo):
         downloadVideo(driver, urls[i], download_folder, parentFolder, videosInList, i)
-        sleep(1)
+        sleep(2)
 
     errorPrint(ErrorType.success, "Done!")
 
