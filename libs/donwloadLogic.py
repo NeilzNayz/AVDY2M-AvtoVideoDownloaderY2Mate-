@@ -28,8 +28,11 @@ def beginConvertion(_dirver, link):
         format = _dirver.find_element(By.ID, "format")
         submit = _dirver.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
+        sleep(1)
         input.send_keys(link)
+        sleep(1)
         format.click()
+        sleep(1)
         submit.click()
         return True
     except:
@@ -41,7 +44,7 @@ def downloadingPreparation(_driver, _link):
         return False
     messagePrint("y2mate page is downloaded!")
     
-    sleep(1)
+    sleep(3)
     #Sending URL to y2mate and begins convertion
     if beginConvertion(_driver, _link) == False:
         return False
