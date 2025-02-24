@@ -119,12 +119,12 @@ def checkUserInput():
 messagePrint("Hello! Enter help to know how to use the script.")
 
 # Auto insert for testing or downloading huge playlist. TO USE autoinsert UNCOMMENT and change (if you want next) next lines:
-#userInput = "url = https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-#checkUserInput()
-#userInput = "path = path/where/to/download"
-#checkUserInput()
-#userInput = "run"
-#checkUserInput()
+userInput = "url = https://www.youtube.com/watch?v=18c3MTX0PK0&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb"
+checkUserInput()
+userInput = "path = I:\Tutorials\C++"
+checkUserInput()
+userInput = "run"
+checkUserInput()
 
 while True:
     print("command: ", end='')
